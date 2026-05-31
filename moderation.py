@@ -83,17 +83,25 @@ def clear_messages(message):
     except Exception as e:
         bot.reply_to(message, "⚠️ Doğru kullanım: `/temizle 20` (Sadece sayı girin)")
 
-# --- Chat Canlı Filtreleme Duvarı (Küfür & Link Kontrolü) ---
-@bot.message_handler(func=lambda m: m.chat.username and m.chat.username.lower() == HEDEF_KANAL.lower() and m.text)
+# Başında '/' olan komutları filtreleme ki commands.py çalışabilsin!
+@bot.message_handler(func=lambda m: m.text and not m.text.startswith('/'))
 def chat_filter_and_reply(message):
     text_lower = message.text.lower()
     words = text_lower.split()
     user_display = f"@{message.from_user.username}" if message.from_user.username else message.from_user.first_name
     
-    admin_status = is_admin(message.chat.id, message.from_user.id)
+    # Mesaj gruptan mı geliyor yoksa bota özelden (DM) mi atılmış kontrol et
+    is_target_group = message.chat.username and message.chat.username.lower() == HEDEF_KANAL.lower()
+    is_private_chat = message.chat.type == 'private'
 
-    # 1. Aşama: Küfür Filtresi (Herkes için geçerli)
-    if any(k in words for k in KUFUR_LISTESI) or any(k in text_lower for k in ['siktir', 'orospu', 'amına']):
+    # Eğer mesaj hedef gruptan veya özel DM'den gelmiyorsa (başka yabancı bir gruptaysa) işlem yapma
+    if not (is_target_group or is_private_chat):
+        return
+
+    admin_status = is_admin(message.chat.id, message.from_user.id) if not is_private_chat else False
+
+    # 1. Aşama: Küfür Filtresi (Sadece Gruplarda Çalışsın, Özelde Engellemesin)
+    if not is_private_chat and (any(k in words for k in KUFUR_LISTESI) or any(k in text_lower for k in ['siktir', 'oroppu', 'amına'])):
         safe_delete_message(message.chat.id, message.message_id)
         warning = bot.send_message(message.chat.id, f"⚠️ {user_display}, <b>grupta küfürlü/argo terimlerin kullanımı kesinlikle yasaktır!</b> Mesajın silindi.", parse_mode='HTML')
         def del_warn():
@@ -104,8 +112,8 @@ def chat_filter_and_reply(message):
         log(f"🚫 Küfür Filtresi: {user_display} mesajı engellendi.")
         return
 
-    # 2. Aşama: Link Filtresi (Admin Olmayanlar İçin)
-    if not admin_status and any(link in text_lower for link in LINKLER):
+    # 2. Aşama: Link Filtresi (Sadece Gruplarda ve Admin Olmayanlar İçin)
+    if not is_private_chat and not admin_status and any(link in text_lower for link in LINKLER):
         safe_delete_message(message.chat.id, message.message_id)
         warning = bot.send_message(message.chat.id, f"🚫 {user_display}, <b>bu grupta reklam veya dış bağlantı (link) paylaşımı yasaktır!</b>", parse_mode='HTML')
         def del_warn():
@@ -116,10 +124,10 @@ def chat_filter_and_reply(message):
         log(f"🚫 Link Filtresi: {user_display} bağlantı paylaşımı engellendi.")
         return
 
-    # 3. Aşama: Akıllı Sohbet Cevapları
-    if any(k in words for k in ['sa', 's.a', 'selam', 'selamun', 'merhaba', 'mrb']):
+    # 3. Aşama: Akıllı Sohbet Cevapları (Hem grupta hem özel DM'de çalışır)
+    if text_lower in ['sa', 's.a', 'selam', 'selamun aleyküm', 'selamun aleykum', 'merhaba', 'mrb']:
         bot.reply_to(message, "Aleykümselam, masaya hoş geldin! Şansın bol olsun. 🎰")
-    elif any(k in words for k in ['nbr', 'naber', 'nasılsın', 'nasilsin']):
+    elif text_lower in ['nbr', 'naber', 'nasılsın', 'nasilsin']:
         bot.reply_to(message, "Harikayız! Yayın hazırlıkları tam gaz devam, seni sormalı? 🚀")
 
 # --- Kaynak Kanaldan Mesaj Kopyalama Duvarı ---

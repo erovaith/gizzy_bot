@@ -30,6 +30,7 @@ def check_youtube_live():
 def start_live_stream_monitor():
     kick_was_live = False
     youtube_was_live = False
+    tarama_sayaci = 1  # Sayaç başlangıcı
 
     kick_banner = (
         "🎰 <b>GIZZY KICK PLATFORMUNDA YAYINDA!</b> 🎰\n\n"
@@ -47,11 +48,20 @@ def start_live_stream_monitor():
 
     while True:
         try:
-            # 1. Kick Denetimi
+            # 1. Platformların anlık durumunu kontrol et
             kick_is_live = check_kick_live()
+            youtube_is_live = check_youtube_live()
+
+            # 2. Terminale Log Düş (Senin İstediğin Özellik)
+            kick_durum = "Açık 🟢" if kick_is_live else "Kapalı 🔴"
+            yt_durum = "Açık 🟢" if youtube_is_live else "Kapalı 🔴"
+            
+            log(f"--- {tarama_sayaci}. Tarama --- | Kick: {kick_durum} | YouTube: {yt_durum}")
+            tarama_sayaci += 1
+
+            # 3. Kick Duyuru Mantığı
             if kick_is_live:
                 if not kick_was_live:
-                    # İstatistikleri güncelle
                     stats = load_stats()
                     stats["toplam_yayin"] += 1
                     stats["son_yayin_tarihi"] = datetime.now().strftime("%d.%m.%Y %H:%M")
@@ -67,8 +77,7 @@ def start_live_stream_monitor():
             else:
                 kick_was_live = False
 
-            # 2. YouTube Denetimi
-            youtube_is_live = check_youtube_live()
+            # 4. YouTube Duyuru Mantığı
             if youtube_is_live:
                 if not youtube_was_live:
                     if os.path.exists(RESIM_YOLU):
@@ -84,4 +93,5 @@ def start_live_stream_monitor():
         except Exception as e:
             log(f"Yayın tarayıcı döngü hatası: {e}")
 
-        time.sleep(60)  # Sunucuyu ve API'leri yormamak için ideal 60 saniye bekleme süresi
+        # Her döngü sonu 60 saniye (1 dakika) bekler
+        time.sleep(60)
