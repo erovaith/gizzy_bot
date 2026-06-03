@@ -1,16 +1,24 @@
 import os
+from dotenv import load_dotenv
 
-# Telegram Bot Token
-BOT_TOKEN = "8909397616:AAHsnzQrhm0n-g9KLL6ewH0GMcUtBNZB7EA"
+# .env dosyasındaki değişkenleri sisteme yükler (Lokalde çalışırken gerekli)
+load_dotenv()
 
-# Kanal ve Grup Kullanıcı Adları (Başında @ olmadan yazın)
-HEDEF_KANAL = "gizzysohbet"
-KAYNAK_KANAL = "betifaguncel"
+# Telegram Bot Token (Hassas Bilgi)
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+
+# Bot token kontrolü
+if not BOT_TOKEN:
+    raise ValueError("HATA: BOT_TOKEN bulunamadı! Lütfen Render veya .env ayarlarını kontrol et.")
+
+# Kanal ve Grup Kullanıcı Adları (Çevresel değişkenlerden okunuyor)
+HEDEF_KANAL = os.getenv("HEDEF_KANAL")
+KAYNAK_KANAL = os.getenv("KAYNAK_KANAL")
 
 # Sosyal Medya ve Yayın Platformu Kullanıcı Adları
-KICK_CHANNEL = "gizzykick"
-YOUTUBE_CHANNEL = "gizzylive2"
-INSTAGRAM = "qiizzeemm_"
+KICK_CHANNEL = os.getenv("KICK_CHANNEL")
+YOUTUBE_CHANNEL = os.getenv("YOUTUBE_CHANNEL")
+INSTAGRAM = os.getenv("INSTAGRAM")
 
 # Dosya Yolları
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
