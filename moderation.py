@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import telebot
 import threading
 from loader import bot
@@ -138,7 +137,8 @@ def auto_copy_partner_messages(message):
         bot.copy_message(chat_id=f"@{HEDEF_KANAL}", from_chat_id=message.chat.id, message_id=message.message_id)
         log("🔥 Sponsor mesajı hedef gruba başarıyla kopyalandı.")
     except Exception as e:
-=======
+        log(f"❌ Hata oluştu: {e}")
+
 import telebot
 import threading
 from loader import bot
@@ -278,5 +278,5 @@ def auto_copy_partner_messages(message):
         bot.copy_message(chat_id=f"@{HEDEF_KANAL}", from_chat_id=message.chat.id, message_id=message.message_id)
         log("🔥 Sponsor mesajı hedef gruba başarıyla kopyalandı.")
     except Exception as e:
->>>>>>> 6bcdebacff28f88584d73c641dc293c985bedf9f
+
         log(f"Kopyalama esnasında hata: {e}")
